@@ -1,13 +1,13 @@
-/* 利用[https://vocadb.net/ VocaDB]的数据，生成moegirl上的模板。
- * 采用JSONP获取数据。
- * 桌面端设计不太美观。
- * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
- * 
- * 加载该脚本后，请在页面[[Special:VocaDB]]进行操作。
- * 注意一天内不要使用太多次“获取P主歌曲列表”，容易超过VocaDB API请求上限。
- * 
- * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
- */
+/** 利用[https://vocadb.net/ VocaDB]的数据，生成moegirl上的模板。
+  * 采用JSONP获取数据。
+  * 桌面端设计不太美观。
+  * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+  * 
+  * 加载该脚本后，请在页面[[Special:VocaDB]]进行操作。
+  * 注意一天内不要使用太多次“获取P主歌曲列表”，容易超过VocaDB API请求上限。
+  * 
+  * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+  */
 "use strict";
 
 const action = () => {
@@ -73,7 +73,7 @@ const action = () => {
 	document.title = '操作页面';
 }
 
-function change() {
+const change = () => {
 	document.getElementById('change').innerHTML = 'loading...';
 }
 
@@ -92,13 +92,19 @@ const IsInIt = (a, b, c) => {
 	return d
 }
 
-async function getting_A_(data, pageid) {
+const getting_A_ = async (data, pageid) => {
 	let br = '<br>';
-	let Lyricist = '', Composer = '', Illustrator = '', Animator = '', Vocalist = '';
+	let Lyricist = '';
+	let Composer = '';
+	let Illustrator = '';
+	let Animator = '';
+	let Vocalist = '';
+
 	data.artists.map(this_artists => {
 		let artistsname = this_artists.name || '';
 		let categories_split = this_artists.categories.split(', ');
 		let effectiveRoles_split = this_artists.effectiveRoles.split(', ');
+
 		for (let j = 0; j < effectiveRoles_split.length || j < categories_split.length; j++) {
 			switch (effectiveRoles_split[j]) {
 				case 'Producer':
@@ -164,14 +170,20 @@ async function getting_A_(data, pageid) {
 	return getting_B(x_a, pageid);
 }
 
-async function getting_B_(x_a, data) {
-	let YouTube = '', NicoNico = '', Bilibili = '', thumbUrl = '', publishtime = '';
+const getting_B_ = async (x_a, data) => {
+	let YouTube = '';
+	let NicoNico = '';
+	let Bilibili = '';
+	let thumbUrl = '';
+	let publishtime = '';
+
 	if (data.pvServices.indexOf('NicoNicoDouga') != -1) {
 		for (let i = 0; i < data.pvs.length; i++) {
 			if (data.pvs[i].service == 'NicoNicoDouga' && data.pvs[i].pvType == 'Original') {
 				NicoNico = data.pvs[i].url.replace(/.+watch\//i, '');
 				thumbUrl = data.pvs[i].thumbUrl;
 				publishtime = data.pvs[i].publishDate;
+
 				if (data.pvs[i].url.replace(/.+watch\/sm/i, '') > 23648995) {
 					thumbUrl += '.M';
 				}
@@ -200,6 +212,7 @@ async function getting_B_(x_a, data) {
 	if (!(publishtime)) {
 		publishtime = data.pvs[0].publishDate;
 	}
+
 	var x_b =
 		'|nnd_id   = ' + NicoNico + '\n' +
 		'|yt_id    = ' + YouTube + '\n' +
@@ -224,43 +237,43 @@ async function getting_B_(x_a, data) {
 		'|条目     = ' + '\n' +
 		x_e +
 		x_c + '}}' + '\n\n';
+
 	console.log('finish');
 	return y;
 }
 
-async function getting_C_(data) {
+const getting_C_ = async (data) => {
 	//step1
-	/* 我不知道为什么这个会报错
+	/* 
 	let return_data = await data["items"].map((a, b) => {
 		return getting_A(data["items"][b]["id"])
 	})
 	*/
 	let return_data = [];
-	for (let b in data["items"]){
-		return_data.push(await getting_A(data["items"][b]["id"]))
+	for (let b in data["items"]) {
+		return_data.push(await getting_A(data["items"][b]["id"]));
 	}
 
-	return return_data
+	return return_data;
 }
 
-
-async function getting_A(pageid) {
+const getting_A = async (pageid) => {
 	//step1
 	let return_data = await $.getJSON(`https://vocadb.net/api/songs/${pageid}?fields=Artists`);
 
-	return getting_A_(return_data, pageid)
+	return getting_A_(return_data, pageid);
 }
 
-async function getting_B(x_a, pageid) {
+const getting_B = async (x_a, pageid) => {
 	//step2
 	let return_data = await $.getJSON(`https://vocadb.net/api/songs/${pageid}?fields=PVs`);
 
 	return getting_B_(x_a, return_data);
 }
 
-async function getting_C(arid) {
-	let return_data = await $.getJSON(`https://vocadb.net/api/songs?artistId%5B%5D=${arid}&artistParticipationStatus=OnlyMainAlbums&pvServices=NicoNicoDouga&maxResults=500`)
-	/* 我不知道为什么这个无法请求
+const getting_C = async (arid) => {
+	let return_data = await $.getJSON(`https://vocadb.net/api/songs?artistId%5B%5D=${arid}&artistParticipationStatus=OnlyMainAlbums&pvServices=NicoNicoDouga&maxResults=500`);
+	/* 
 	let return_data = await $.getJSON("https://vocadb.net/api/songs", {
 		params: {
 			"artistId[]": arid,
@@ -283,12 +296,8 @@ $(() => {
 	});
 });
 
-function change() {
-	document.getElementById('change').innerHTML = 'loading...';
-}
-
-async function star_song() {
-	change()
+const star_song = async () => {
+	change();
 
 	var fms = document.getElementById('templeform_song');
 	let a = await getting_A(fms.elements.vocaid.value);
@@ -296,8 +305,8 @@ async function star_song() {
 
 }
 
-async function star_ar() {
-	change()
+const star_ar = async () => {
+	change();
 
 	var fma = document.getElementById('templeform_ar');
 	let c = await getting_C(fma.elements.arid.value);
@@ -315,5 +324,5 @@ async function star_ar() {
 	document.getElementById('change').innerHTML = `<pre>${_c}</pre>`;
 }
 
-let config = mw.config.get(['wgNamespaceNumber', 'wgTitle'])
-if (config['wgNamespaceNumber'] === -1 && config['wgTitle'] === 'VocaDB') { action() }
+let config = mw.config.get(['wgNamespaceNumber', 'wgTitle']);
+if (config['wgNamespaceNumber'] === -1 && config['wgTitle'] === 'VocaDB') action() 
