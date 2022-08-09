@@ -11,6 +11,9 @@
 "use strict";
 
 const action = () => {
+	let ps_1 = '<span><del>若获取有误，建议自行到VocaDB修改</del></span>';
+	let ps_2 = '<span>补充：该获取最多获取500首，且只包含niconico的投稿，其余手动补充。</span>';
+
 	document.getElementsByTagName("style")[0].append(`
 	div.getbuttom{
 		background-color: #5fa7f3;
@@ -40,7 +43,8 @@ const action = () => {
 		box-shadow: 2px 2px 5px 1px #ccc;
 	}`);
 
-	$('#bodyContent').html(`<hr>
+	$('#bodyContent').html(`${ps_1}
+	<hr>
 	<div id="change" style="
 	overflow: scroll;
 	user-modify: read-write;
@@ -63,6 +67,7 @@ const action = () => {
 	
 	-->
 	<h2>获取P主歌曲列表</h2>
+	${ps_2}
 	<form id="templeform_ar" class="getid">
 		<input class="getid" type="number" name="arid" placeholder="vocadbP主页面ID">
 	</form>
@@ -220,7 +225,7 @@ const getting_B_ = async (x_a, data) => {
 	var x_c =
 		'|image    = ' + thumbUrl + '\n';
 	var x_d =
-		'|投稿日期 = ' + publishtime.replace(/(\d{4})-(\d{2})-(\d{2}).+/i, '$1年$2月$3日') + '\n';
+		'|投稿日期 = ' + (publishtime || '').replace(/(\d{4})-(\d{2})-(\d{2}).+/i, '$1年$2月$3日') + '\n';
 	if (data.name.search(ja) != -1) {
 		var x_e =
 			'|标题     = ' + `{{lj|${data.name}}}` + '\n';
@@ -325,4 +330,4 @@ const star_ar = async () => {
 }
 
 let config = mw.config.get(['wgNamespaceNumber', 'wgTitle']);
-if (config['wgNamespaceNumber'] === -1 && config['wgTitle'] === 'VocaDB') action() 
+if (config['wgNamespaceNumber'] === -1 && config['wgTitle'] === 'VocaDB') action()
