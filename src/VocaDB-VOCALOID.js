@@ -11,8 +11,8 @@
 "use strict";
 
 const action = () => {
-	let ps_1 = '<span><del>若获取有误，建议自行到VocaDB修改</del></span>';
-	let ps_2 = '<span>补充：该获取最多获取500首，且只包含niconico的投稿，其余手动补充。</span>';
+	let ps_1 = '<p><del>若获取有误，建议自行到VocaDB修改</del></p>';
+	let ps_2 = '<p>补充：该获取最多获取500首，且只包含niconico的投稿，其余手动补充；</p><p>排除了recover等作品，但在VocaDB大部分专辑曲重新投稿是算recover的，记得检查。</p>';
 
 	document.getElementsByTagName("style")[0].append(`
 	div.getbuttom{
@@ -58,7 +58,7 @@ const action = () => {
 	-->
 	<h2>获取歌曲</h2>
 	<form id="templeform_song" class="getid">
-		<input class="getid" type="number" name="vocaid" placeholder="vocadb歌曲页面ID">
+		<input class="getid" type="number" name="sid" placeholder="vocadb歌曲页面ID">
 	</form>
 	<br>
 	<div id="song" class="getbuttom">获得请求</div>
@@ -72,7 +72,17 @@ const action = () => {
 		<input class="getid" type="number" name="arid" placeholder="vocadbP主页面ID">
 	</form>
 	<br>
-	<div id="ar" class="getbuttom">获得请求</div>`);
+	<div id="ar" class="getbuttom">获得请求</div>
+	<!-- 
+	
+	-->
+	<h2>获取专辑曲目列表</h2>
+	<form id="templeform_album" class="getid">
+		<input class="getid" type="number" name="alid" placeholder="vocadb专辑页面ID">
+	</form>
+	<br>
+	<div id="album" class="getbuttom">获得请求</div>
+	<br>`);
 
 	if (mw.config.get("skin") === "minerva") {
 		$('h1#section_0').text('Special:VocaDB');
@@ -87,6 +97,7 @@ const change = () => {
 }
 
 //action
+//预备函数
 const ja = /[\u2E80-\u2FDF\u3040-\u318F\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF]/i;
 
 const IsInIt = (a, b, c) => {
@@ -101,6 +112,50 @@ const IsInIt = (a, b, c) => {
 	return d
 }
 
+const _IsInIt = (a, b, c) => {
+	if (a.indexOf(b) == -1) {
+		var d = a + b + c;
+	} else {
+		var d = a;
+	}
+	return d
+}
+
+const second_change = time => {
+	let m = parseInt(time / 60)
+	let s = parseInt(time % 60)
+	s = s < 10 ? '0' + s : s
+	return `${m}:${s}`
+}
+
+const lj = (name, links) => {
+	//内链
+	if (links) {
+		if (links.indexOf('NicoNicoDouga') != -1) {
+			name = `[[${name}]]`;
+		}
+	}
+	//语言
+	if (name) {
+		if (name.search(ja) != -1) {
+			name = `{{lj|${name}}}`;
+		}
+		return name
+	} else if (name == undefined) {
+		name = '';
+		return name
+	} else {
+		return name
+	}
+}
+
+const isAllEqual = array => {
+	return !array.some(value => {
+		return value !== array[0];
+	});
+}
+
+//star
 const getting_A_ = async (data, pageid) => {
 	let br = '<br>';
 	let Lyricist = '';
@@ -253,11 +308,6 @@ const getting_B_ = async (x_a, data) => {
 
 const getting_C_ = async (data) => {
 	//step1
-	/* 
-	let return_data = await data["items"].map((a, b) => {
-		return getting_A(data["items"][b]["id"])
-	})
-	*/
 	let return_data = [];
 	for (let b in data["items"]) {
 		if (data["items"][b]["songType"] !== 'Original') break;
@@ -266,6 +316,140 @@ const getting_C_ = async (data) => {
 
 	return return_data;
 }
+
+const getting_D_ = async (data) => {
+	let tracklist = '';
+	//let artistString = '';
+	let a = 1;
+	let b = 0;
+	let br = '、';
+	data.map(this_data => {
+		let singer = '';
+		let music = '';
+		let lyrics = '';
+		for (let j = 0; j < this_data.song.artists.length; j++) {
+			let artistsname = this_data.song.artists[j].name || '';
+			let categories_split = this_data.song.artists[j].categories.split(', ');
+			let effectiveRoles_split = this_data.song.artists[j].effectiveRoles.split(', ');
+			for (let k = 0; k < effectiveRoles_split.length || k < categories_split.length; k++) {
+				switch (effectiveRoles_split[k]) {
+					case 'Producer':
+						lyrics = _IsInIt(lyrics, artistsname, br);
+						music = _IsInIt(music, artistsname, br);
+						break;
+					case 'Lyricist':
+						lyrics = _IsInIt(lyrics, artistsname, br);
+						break;
+					case 'Composer':
+						music = _IsInIt(music, artistsname, br);
+						break;
+					case 'Vocalist':
+						singer = _IsInIt(singer, `[[${artistsname}]]`, br);
+						break;
+					default:
+						break;
+				}
+
+				switch (categories_split[k]) {
+					case 'Lyricist':
+						lyrics = _IsInIt(lyrics, artistsname, br);
+						break;
+					case 'Composer':
+						music = _IsInIt(music, artistsname, br);
+						break;
+					case 'Vocalist':
+						singer = _IsInIt(singer, `[[${artistsname}]]`, br);
+						break;
+					default:
+						break;
+				}
+			}
+			if (music == '' || lyrics == '') {
+				for (let k = 0; k < this_data.song.artists.length; k++) {
+					if (this_data.song.artists[k].categories.indexOf('Producer') != -1) {
+						music = _IsInIt(music, this_data.song.artists[k].name, br);
+						lyrics = _IsInIt(lyrics, this_data.song.artists[k].name, br);
+						break;
+					}
+				}
+			}
+		}
+
+		//去多余顿号
+		singer = singer.substring(0, singer.length - 1);
+		music = music.substring(0, music.length - 1);
+		lyrics = lyrics.substring(0, lyrics.length - 1);
+
+		music = lj(music);
+		lyrics = lj(lyrics);
+		singer = lj(singer);
+
+		if (this_data.discNumber == b) {
+			a++;
+			tracklist = tracklist +
+				`| title${a} = ` + lj(this_data.name, this_data.song.pvServices) + '\n' +
+				`| singer${a} = ` + singer + '\n' +
+				`| music${a} = ` + music + '\n' +
+				`| lyrics${a} = ` + lyrics + '\n' +
+				`| length${a} = ` + second_change(this_data.song.lengthSeconds) + '\n\n'
+		} else {
+			a = 1;
+			b++;
+			if (tracklist != '') {
+				tracklist += '}}' + '\n' + '￥这是一个伪分割符￥';
+			}
+			tracklist = tracklist + '\n' +
+				`==== Disc ${b} ====` + '\n\n' +
+				'{{tracklist' + '\n' +
+				'| headline = ' + 'Disc' + ' ' + b + '\n' +
+				'| singer_credits = yes' + '\n' +
+				'| music_credits = yes' + '\n' +
+				'| lyrics_credits = yes' + '\n\n' +
+				/*
+				 * 便于查看
+				 */
+				`| title${a} = ` + lj(this_data.name, this_data.song.pvServices) + '\n' +
+				`| singer${a} = ` + singer + '\n' +
+				`| music${a} = ` + music + '\n' +
+				`| lyrics${a} = ` + lyrics + '\n' +
+				`| length${a} = ` + second_change(this_data.song.lengthSeconds) + '\n\n';
+		}
+	})
+	tracklist += '}}' + '\n\n' + '{{-}}';
+
+	// part 2
+	let disc = tracklist.split('￥这是一个伪分割符￥');
+	for (let i = 0; i < disc.length; i++) {
+		let music = disc[i].match(/(?<=music\d+ ?= ?).+/ig);
+		if (isAllEqual(music)) {
+			disc[i] = disc[i].replace(/\n\| ?music\d+ ?= ?.+/ig, '');
+			disc[i] = disc[i].replace(/(\| ?headline.+?\n)/ig, '$1| all_music =' + music[0] + '\n');
+			disc[i] = disc[i].replace('music_credits = yes', 'music_credits = no')
+		}
+	}
+	for (let i = 0; i < disc.length; i++) {
+		let lyrics = disc[i].match(/(?<=lyrics\d+ ?= ?).+/ig);
+		if (isAllEqual(lyrics)) {
+			disc[i] = disc[i].replace(/\n\| ?lyrics\d+ ?= ?.+/ig, '');
+			disc[i] = disc[i].replace(/(\| ?headline.+?\n)/ig, '$1| all_lyrics =' + lyrics[0] + '\n');
+			disc[i] = disc[i].replace('lyrics_credits = yes', 'lyrics_credits = no')
+		}
+	}
+	for (let i = 0; i < disc.length; i++) {
+		let singer = disc[i].match(/(?<=singer\d+ ?= ?).+/ig);
+		if (isAllEqual(singer)) {
+			disc[i] = disc[i].replace(/\n\| ?singer\d+ ?= ?.+/ig, '');
+			disc[i] = disc[i].replace(/(\| ?headline.+?\n)/ig, '$1| all_singer =' + singer[0] + '\n');
+			disc[i] = disc[i].replace('singer_credits = yes', 'singer_credits = no')
+		}
+	}
+	if (disc.length == 1) {
+		disc[0] = disc[0].replace('==== Disc 1 ====' + '\n\n', '');
+	}
+
+	return disc.join('');
+}
+
 
 const getting_A = async (pageid) => {
 	//step1
@@ -297,6 +481,13 @@ const getting_C = async (arid) => {
 	return getting_C_(return_data);
 }
 
+const getting_D = async (alid) => {
+	let return_data = await $.getJSON(`https://vocadb.net/api/albums/${alid}/tracks?fields=Artists`);
+
+	return getting_D_(return_data);
+}
+
+//页面操作
 $(() => {
 	$('#song').click(() => { //防WAF
 		star_song();
@@ -304,13 +495,16 @@ $(() => {
 	$('#ar').click(() => { //防WAF
 		star_ar();
 	});
+	$('#album').click(() => { //防WAF
+		star_album();
+	});
 });
 
 const star_song = async () => {
 	change();
 
 	var fms = document.getElementById('templeform_song');
-	let a = await getting_A(fms.elements.vocaid.value);
+	let a = await getting_A(fms.elements.sid.value);
 	document.getElementById('change').innerHTML = `<pre>${a}</pre>`;
 
 }
@@ -332,6 +526,15 @@ const star_ar = async () => {
 	}).join("");
 
 	document.getElementById('change').innerHTML = `<pre>${_c}</pre>`;
+}
+
+const star_album = async () => {
+	change();
+
+	var fml = document.getElementById('templeform_album');
+	let d = await getting_D(fml.elements.alid.value);
+
+	document.getElementById('change').innerHTML = `<pre>${d}</pre>`;
 }
 
 if (mw.config.get('wgPageName').toLowerCase() === "special:vocadb") action()
