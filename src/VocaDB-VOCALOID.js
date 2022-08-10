@@ -323,8 +323,8 @@ const star_ar = async () => {
 
 	let _c = c.sort((a, b) => {
 		let __re = /\d{4}年\d{2}月\d{2}日/ig, _re = /[年月日]/ig;
-		let _a = a.match(__re)[0].replace(_re, "");
-		let _b = b.match(__re)[0].replace(_re, "");
+		let _a = (a.match(__re) || ['9999年99月99日'])[0].replace(_re, "");
+		let _b = (b.match(__re) || ['9999年99月99日'])[0].replace(_re, "");
 
 		if (_a < _b) return -1;
 		else if (_a > _b) return 1;
