@@ -1,6 +1,6 @@
 /** 利用[https://vocadb.net/ VocaDB]的数据，生成moegirl上的模板。
   * 采用JSONP获取数据。
-  * 桌面端设计不太美观。
+  * 代码堆放至github：https://github.com/VOCALOID-lower/Wiki-JS/blob/main/src/VocaDB-VOCALOID.js
   * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
   * 
   * 加载该脚本后，请在页面[[Special:VocaDB]]进行操作。
@@ -74,8 +74,12 @@ const action = () => {
 	<br>
 	<div id="ar" class="getbuttom">获得请求</div>`);
 
-	$('h1#section_0').html(`<h2>操作页面</h2>`);
-	document.title = '操作页面';
+	if (mw.config.get("skin") === "minerva") {
+		$('h1#section_0').text('Special:VocaDB');
+	} else {
+		document.getElementsByTagName("h1")[0].textContent = "Special:VocaDB";
+	}
+	document.title = 'Special:VocaDB';
 }
 
 const change = () => {
@@ -256,6 +260,7 @@ const getting_C_ = async (data) => {
 	*/
 	let return_data = [];
 	for (let b in data["items"]) {
+		if (data["items"][b]["songType"] !== 'Original') break;
 		return_data.push(await getting_A(data["items"][b]["id"]));
 	}
 
@@ -329,5 +334,4 @@ const star_ar = async () => {
 	document.getElementById('change').innerHTML = `<pre>${_c}</pre>`;
 }
 
-let config = mw.config.get(['wgNamespaceNumber', 'wgTitle']);
-if (config['wgNamespaceNumber'] === -1 && config['wgTitle'] === 'VocaDB') action()
+if (mw.config.get('wgPageName').toLowerCase() === "special:vocadb") action()
