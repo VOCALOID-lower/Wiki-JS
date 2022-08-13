@@ -165,7 +165,11 @@ const tran = async (template) => {
 		'text': `{{:Template:${template}}}`,
 	}
 
-	let response = await api.postWithToken('csrf', params) || '';
+	try {
+		var response = await api.postWithToken('csrf', params) || '';
+	} catch (err) { // 防止502
+		return tran(template)
+	}
 
 	if (response) {
 		let data = response;
