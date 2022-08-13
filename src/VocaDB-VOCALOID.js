@@ -98,6 +98,8 @@ const change = () => {
 
 //action
 //预备函数
+const api = new mw.Api();
+
 const ja = /[\u2E80-\u2FDF\u3040-\u318F\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF]/i;
 
 const IsInIt = (a, b, c) => {
@@ -154,6 +156,28 @@ const isAllEqual = array => {
 		return value !== array[0];
 	});
 }
+
+const tran = async (template) => {
+	let obj = {};
+	let params = {
+		'format': 'json',
+		'action': 'expandtemplates',
+		'text': `{{:Template:${template}}}`,
+	}
+
+	let response = await api.postWithToken('csrf', params)
+
+	if (response) {
+		let data = response;
+		(data['expandtemplates']['*']).replace(/\[\[(.+?)(\|(.+?))?\]\]/ig, (a, b, c, d) => {
+			obj[d ? d.replace(/^(<(?<a>.+?)( .+)?>)?(.+?)(<\/(\k<a>)>)?$/ig, "$4").replace(/^(-\{)?(.+?)(\}-)?$/ig/* JS没有平衡组只能出此下策 */, "$2") : b] = b;
+		})
+		return obj;
+	} else { // 防止502
+		return tran(template);
+	}
+
+};
 
 //star
 const getting_A_ = async (data, pageid) => {
@@ -277,13 +301,13 @@ const getting_B_ = async (x_a, data) => {
 		publishtime = data.pvs[0].publishDate;
 	}
 
-	var x_b =
+	let x_b =
 		'|nnd_id   = ' + NicoNico + '\n' +
 		'|yt_id    = ' + YouTube + '\n' +
 		'|bb_id    = ' + Bilibili + '\n';
-	var x_c =
+	let x_c =
 		'|image    = ' + thumbUrl + '\n';
-	var x_d =
+	let x_d =
 		'|投稿日期 = ' + (publishtime || '').replace(/(\d{4})-(\d{2})-(\d{2}).+/i, '$1年$2月$3日') + '\n';
 	if (data.name.search(ja) != -1) {
 		var x_e =
@@ -292,13 +316,23 @@ const getting_B_ = async (x_a, data) => {
 		var x_e =
 			'|标题     = ' + data.name + '\n';
 	}
+
+	let ararr = [];
+	for (let i of data.artistString.replace(/^(.+?)( feat.+)?$/, "$1").split(', ')) {
+		ararr.push(await tran(i))
+	}
+
+	let tran_table = ararr.reduce((a, b) => Object.assign(a, b), {})
+
+	let x_f = tran_table[data.name] || '';
+
 	let y =
 		'{{Producer_Song' + '\n' +
 		x_b +
 		x_a +
 		'|歌曲描述 = ' + '\n' +
 		x_d +
-		'|条目     = ' + '\n' +
+		'|条目     = ' + x_f + '\n' +
 		x_e +
 		x_c + '}}' + '\n\n';
 
