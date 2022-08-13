@@ -165,7 +165,7 @@ const tran = async (template) => {
 		'text': `{{:Template:${template}}}`,
 	}
 
-	let response = await api.postWithToken('csrf', params)
+	let response = await api.postWithToken('csrf', params) || '';
 
 	if (response) {
 		let data = response;
