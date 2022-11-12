@@ -1,5 +1,7 @@
-/** 为移动端(mzh)添加萌皮(moeskin)的分类条；
+/** 
+  * 为移动端(mzh)添加萌皮(moeskin)的分类条；
   * 带有Hotcat（可能502加载不全），但没有样式。
+  * 
   */
 (async function () {
     if (mw.config.get('skin') !== 'minerva') {

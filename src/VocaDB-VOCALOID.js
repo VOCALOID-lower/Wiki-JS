@@ -1,4 +1,5 @@
-﻿/** 利用[https://vocadb.net/ VocaDB]的数据，生成moegirl上的模板。
+﻿/** 
+  * 利用[https://vocadb.net/ VocaDB]的数据，生成moegirl上的模板。
   * 采用JSONP获取数据。
   * 代码堆放至github：https://github.com/VOCALOID-lower/Wiki-JS/blob/main/src/VocaDB-VOCALOID.js
   * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
@@ -8,6 +9,7 @@
   * 由于正则包含负向预查，可能不支持Safari等浏览器。
   * 
   * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+  * 
   */
 "use strict";
 
