@@ -31,11 +31,12 @@ $(function () {
 
 	// 预备变量
 	var moe_data = "";
+	var api = new mw.Api();
 
 	// 预备函数(请求)
 	function moesync_jsonp() {
 		$.ajax({
-			url: 'https://mzh.moegirl.org.cn/api.php?action=parse&format=json&page=' + mw.config.get("wgPageName") + '&prop=wikitext',
+			url: 'https://zh.moegirl.org.cn/api.php?action=parse&format=json&page=' + mw.config.get("wgPageName") + '&prop=wikitext',
 			type: 'get',
 			dataType: 'jsonp',
 			jsonpCallback: "_ajax_callback",
@@ -110,7 +111,7 @@ $(function () {
 	}
 
 	function moesync_edit(summary) {
-		api.postWithToken( 'csrf', {
+		api.postWithToken('csrf', {
 			action: 'edit',
 			format: 'json',
 			title: mw.config.get('wgPageName'),
