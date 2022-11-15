@@ -9,7 +9,8 @@
 
 $(function () {
 	// body
-	if (mw.config.get("wgIsArticle") && mw.config.get("skin") == 'vector') {
+	if ((mw.config.get("wgAction") === 'edit' || mw.config.get("wgIsArticle")) && mw.config.get("skin") == 'vector') {
+		$('#p-cactions').css('display','block');
 		var ca_sync = '<li id="ca-sync" class="mw-list-item">' +
 			'<a href="javascript:;">' +
 			'<span>' +
