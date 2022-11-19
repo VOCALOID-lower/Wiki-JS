@@ -10,15 +10,7 @@
 $(function () {
 	// body
 	if ((mw.config.get("wgAction") === 'edit' || mw.config.get("wgIsArticle")) && mw.config.get("skin") == 'vector') {
-		$('#p-cactions').css('display','block');
-		var ca_sync = '<li id="ca-sync" class="mw-list-item">' +
-			'<a href="javascript:;">' +
-			'<span>' +
-			'同步主站' +
-			'</span>' +
-			'</a>' +
-			'</li>';
-		$('nav#p-cactions ul.vector-menu-content-list').append(ca_sync);
+		mw.util.addPortletLink("p-cactions"/*portletId*/, "javascript:;"/*href*/, "同步主站"/*text*/, "ca-sync"/*id*/, "同步主站同名页面"/*title*/);
 		$('#ca-sync').click(function () {
 			mw.notify('请求中...');
 			// ------------------
@@ -26,7 +18,7 @@ $(function () {
 			moesync_body();
 			$('#moe-background').show(200);
 			// ------------------
-			moesync_jsonp();
+			mw.loader.using(["mediawiki.diff.styles"], moesync_jsonp());
 		});
 	}
 
@@ -37,7 +29,7 @@ $(function () {
 	// 预备函数(请求)
 	function moesync_jsonp() {
 		$.ajax({
-			url: 'https://zh.moegirl.org.cn/api.php?action=parse&format=json&page=' + mw.config.get("wgPageName") + '&prop=wikitext',
+			url: 'https://zh.moegirl.org.cn/api.php?action=parse&format=json&page=' + encodeURIComponent(mw.config.get("wgPageName")) + '&prop=wikitext',
 			type: 'get',
 			dataType: 'jsonp',
 			jsonpCallback: "_ajax_callback",
@@ -150,7 +142,7 @@ $(function () {
 	}
 
 	function moesync_body() {
-		$('body').append('<div id="moe-background" style="position: fixed;top: 70px;left: 10%;z-index: 100;width: 80%;height: 622px;background-color: rgb(255 255 255 / 95%);border: solid 2px #b79a48;backdrop-filter: blur(2px);border-radius: 19px;overflow-y: scroll;">' +
+		$('body').append('<div id="moe-background" style="position: fixed;top:5%;left:10%;z-index:100;width:80%;height:90%;background-color: rgb(255 255 255 / 95%);border: solid 2px #b79a48;backdrop-filter: blur(2px);border-radius: 19px;overflow-y: scroll;">' +
 			'<div id="moe-diff-div" class="moe-diff" style="display:block">' +
 			'<table class="diff moe-diff">' +
 			'<colgroup>' +
@@ -171,7 +163,7 @@ $(function () {
 			'</tbody>' +
 			'</table>' +
 			'</div>' +
-			'<div id="hidemoe" style="box-sizing:content-box;z-index: 100;position:fixed;top: 2px;right: 1%;" title="隐藏界面">' +
+			'<div id="hidemoe" style="box-sizing:content-box;z-index: 100;position:fixed;top: 2px;right: 1%;cursor:pointer" title="隐藏界面">' +
 			'<span style="font-size:150%">' +
 			'×' +
 			'</span>' +
